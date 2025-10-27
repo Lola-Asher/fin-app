@@ -7,22 +7,6 @@ pipeline {
         DOCKER_TAG = "${BUILD_NUMBER}"
         COMPOSE_PROJECT_NAME = "fin-app-${BUILD_NUMBER}"
     }
-
-    stage('Install Dependencies') {
-    steps {
-        echo 'Installing dependencies...'
-        script {
-            sh '''
-                # Install docker-compose if not present
-                if ! command -v docker-compose &> /dev/null; then
-                    echo "Installing docker-compose..."
-                    sudo curl -L "https://github.com/docker/compose/releases/download/v2.20.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-                    sudo chmod +x /usr/local/bin/docker-compose
-                fi
-            '''
-        }
-    }
-}
     
     stages {
         stage('Checkout') {
@@ -115,8 +99,8 @@ pipeline {
                 script {
                     sh '''
                         # Test adding an expense
-                        curl -X POST http://localhost:5002 \
-                             -d "description=Test Expense&amount=10.50" \
+                        curl -X POST http://localhost:5002 \\
+                             -d "description=Test Expense&amount=10.50" \\
                              -H "Content-Type: application/x-www-form-urlencoded"
                         
                         # Test activity log

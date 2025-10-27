@@ -6,11 +6,6 @@ pipeline {
         DOCKER_IMAGE = 'fin-app'
         DOCKER_TAG = "${BUILD_NUMBER}"
         COMPOSE_PROJECT_NAME = "fin-app-${BUILD_NUMBER}"
-        
-        // Secure credentials from Jenkins
-        DB_USER = credentials('fin-app-db-user')
-        DB_PASSWORD = credentials('fin-app-db-password')
-        DB_NAME = credentials('fin-app-db-name')
     }
     
     stages {
@@ -125,7 +120,7 @@ pipeline {
                     // Production deployment
                     sh '''
                         # Backup current production database
-                        docker-compose -f docker-compose.prod.yml exec -T db pg_dump -U ${DB_USER} ${DB_NAME} > backup_$(date +%Y%m%d_%H%M%S).sql || true
+                        docker-compose -f docker-compose.prod.yml exec -T db pg_dump -U user finance_db > backup_$(date +%Y%m%d_%H%M%S).sql || true
                         
                         # Deploy to production
                         docker-compose -f docker-compose.prod.yml down

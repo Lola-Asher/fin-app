@@ -10,7 +10,7 @@ services:
       - .:/app
       - prod_logs:/app/logs
     environment:
-      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      - DATABASE_URL=postgresql://user:password@db:5432/finance_db
     depends_on:
       - db
 
@@ -20,9 +20,9 @@ services:
     volumes:
       - prod_postgres_data:/var/lib/postgresql/data/
     environment:
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=finance_db
 
 # Production volumes
 volumes:

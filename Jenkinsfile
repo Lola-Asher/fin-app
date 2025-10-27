@@ -7,6 +7,22 @@ pipeline {
         DOCKER_TAG = "${BUILD_NUMBER}"
         COMPOSE_PROJECT_NAME = "fin-app-${BUILD_NUMBER}"
     }
+
+    stage('Install Dependencies') {
+    steps {
+        echo 'Installing dependencies...'
+        script {
+            sh '''
+                # Install docker-compose if not present
+                if ! command -v docker-compose &> /dev/null; then
+                    echo "Installing docker-compose..."
+                    sudo curl -L "https://github.com/docker/compose/releases/download/v2.20.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+                    sudo chmod +x /usr/local/bin/docker-compose
+                fi
+            '''
+        }
+    }
+}
     
     stages {
         stage('Checkout') {
@@ -21,7 +37,7 @@ pipeline {
                 echo 'Building Docker images...'
                 script {
                     // Build the application
-                    sh 'docker-compose build'
+                    sh 'docker compose build'
                 }
             }
         }
@@ -31,7 +47,7 @@ pipeline {
                 echo 'Running tests...'
                 script {
                     // Start services for testing
-                    sh 'docker-compose up -d'
+                    sh 'docker compose up -d'
                     
                     // Wait for services to be ready
                     sh 'sleep 30'
@@ -42,14 +58,14 @@ pipeline {
                         curl -f http://localhost:5001 || exit 1
                         
                         # Check if database is accessible
-                        docker-compose exec -T db psql -U user -d finance_db -c "SELECT 1;" || exit 1
+                        docker compose exec -T db psql -U user -d finance_db -c "SELECT 1;" || exit 1
                     '''
                 }
             }
             post {
                 always {
                     // Clean up test environment
-                    sh 'docker-compose down -v'
+                    sh 'docker compose down -v'
                 }
             }
         }
@@ -78,10 +94,10 @@ pipeline {
                     // Deploy to staging (different port to avoid conflicts)
                     sh '''
                         # Stop any existing staging deployment
-                        docker-compose -f docker-compose.staging.yml down -v || true
+                        docker compose -f docker-compose.staging.yml down -v || true
                         
                         # Start staging deployment
-                        docker-compose -f docker-compose.staging.yml up -d
+                        docker compose -f docker-compose.staging.yml up -d
                         
                         # Wait for deployment
                         sleep 15
@@ -120,11 +136,11 @@ pipeline {
                     // Production deployment
                     sh '''
                         # Backup current production database
-                        docker-compose -f docker-compose.prod.yml exec -T db pg_dump -U user finance_db > backup_$(date +%Y%m%d_%H%M%S).sql || true
+                        docker compose -f docker-compose.prod.yml exec -T db pg_dump -U user finance_db > backup_$(date +%Y%m%d_%H%M%S).sql || true
                         
                         # Deploy to production
-                        docker-compose -f docker-compose.prod.yml down
-                        docker-compose -f docker-compose.prod.yml up -d --build
+                        docker compose -f docker-compose.prod.yml down
+                        docker compose -f docker-compose.prod.yml up -d --build
                         
                         # Wait for services
                         sleep 20
@@ -142,7 +158,7 @@ pipeline {
             echo 'Cleaning up...'
             script {
                 // Clean up staging environment
-                sh 'docker-compose -f docker-compose.staging.yml down -v || true'
+                sh 'docker compose -f docker-compose.staging.yml down -v || true'
                 
                 // Clean up unused Docker images
                 sh 'docker image prune -f || true'

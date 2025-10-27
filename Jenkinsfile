@@ -6,6 +6,8 @@ pipeline {
         DOCKER_IMAGE = 'fin-app'
         DOCKER_TAG = "${BUILD_NUMBER}"
         COMPOSE_PROJECT_NAME = "fin-app-${BUILD_NUMBER}"
+        // Add Docker to PATH
+        PATH = "/usr/local/bin:/opt/homebrew/bin:${env.PATH}"
     }
     
     stages {

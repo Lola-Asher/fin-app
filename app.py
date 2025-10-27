@@ -85,7 +85,69 @@ def index():
     # Use the index.html drawing and show the user the list of expenses
     return render_template('index.html', expenses=all_expenses)
 
-# --- 6. The page for our activity book ---
+# --- 6. Edit an expense ---
+@app.route('/edit/<int:expense_id>', methods=['GET', 'POST'])
+def edit_expense(expense_id):
+    conn = get_db_connection()
+    
+    if request.method == 'POST':
+        # Update the expense
+        new_desc = request.form['description']
+        new_amount = float(request.form['amount'])
+        
+        with conn.cursor() as cur:
+            # Get old values for logging
+            cur.execute('SELECT description, amount FROM expenses WHERE id = %s', (expense_id,))
+            old_expense = cur.fetchone()
+            
+            # Update the expense
+            cur.execute(
+                'UPDATE expenses SET description = %s, amount = %s WHERE id = %s',
+                (new_desc, new_amount, expense_id)
+            )
+            conn.commit()
+            
+            # Log the change
+            log_activity(conn, "EDIT_EXPENSE", 
+                        f"Changed '{old_expense[0]}' (${old_expense[1]}) to '{new_desc}' (${new_amount})")
+        
+        conn.close()
+        return redirect('/')
+    
+    # Show edit form
+    with conn.cursor() as cur:
+        cur.execute('SELECT * FROM expenses WHERE id = %s', (expense_id,))
+        expense = cur.fetchone()
+    conn.close()
+    
+    if not expense:
+        return "Expense not found", 404
+    
+    return render_template('edit.html', expense=expense)
+
+# --- 7. Delete an expense ---
+@app.route('/delete/<int:expense_id>', methods=['POST'])
+def delete_expense(expense_id):
+    conn = get_db_connection()
+    
+    with conn.cursor() as cur:
+        # Get expense details for logging
+        cur.execute('SELECT description, amount FROM expenses WHERE id = %s', (expense_id,))
+        expense = cur.fetchone()
+        
+        if expense:
+            # Delete the expense
+            cur.execute('DELETE FROM expenses WHERE id = %s', (expense_id,))
+            conn.commit()
+            
+            # Log the deletion
+            log_activity(conn, "DELETE_EXPENSE", 
+                        f"Deleted '{expense[0]}' (${expense[1]})")
+    
+    conn.close()
+    return redirect('/')
+
+# --- 8. The page for our activity book ---
 @app.route('/activity')
 def activity_log_page():
     conn = get_db_connection()
@@ -95,7 +157,7 @@ def activity_log_page():
     conn.close()
     return render_template('activity.html', activities=activities)
 
-# --- 7. Start everything! ---
+# --- 9. Start everything! ---
 init_db()
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

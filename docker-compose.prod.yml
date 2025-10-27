@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  # Production web app
+  web:
+    build: .
+    ports:
+      - "5001:5000"
+    volumes:
+      - .:/app
+      - prod_logs:/app/logs
+    environment:
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+    depends_on:
+      - db
+
+  # Production database
+  db:
+    image: postgres:14-alpine
+    volumes:
+      - prod_postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+
+# Production volumes
+volumes:
+  prod_postgres_data:
+  prod_logs: {}

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Expense - My Finance Tracker</title>
+    <style>
+        body { font-family: sans-serif; margin: 2em; }
+        form { margin-bottom: 2em; }
+        input[type="text"], input[type="number"] { 
+            padding: 8px; margin: 5px; width: 200px; 
+        }
+        input[type="submit"] { 
+            padding: 10px 20px; background-color: #4CAF50; 
+            color: white; border: none; cursor: pointer; 
+        }
+        .cancel-btn { 
+            padding: 10px 20px; background-color: #f44336; 
+            color: white; text-decoration: none; margin-left: 10px; 
+        }
+    </style>
+</head>
+<body>
+    <h1>Edit Expense</h1>
+    
+    <form method="post">
+        <label for="description">Description:</label><br>
+        <input type="text" name="description" id="description" 
+               value="{{ expense[1] }}" required><br><br>
+        
+        <label for="amount">Amount:</label><br>
+        <input type="number" name="amount" id="amount" step="0.01" 
+               value="{{ expense[2] }}" required><br><br>
+        
+        <input type="submit" value="Update Expense">
+        <a href="/" class="cancel-btn">Cancel</a>
+    </form>
+    
+    <hr>
+    <p><strong>Original:</strong> {{ expense[1] }} - ${{ "%.2f"|format(expense[2]) }}</p>
+    <p><strong>Created:</strong> {{ expense[3].strftime('%Y-%m-%d') }}</p>
+</body>
+</html>

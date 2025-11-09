@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  # Staging web app (different port)
+  web:
+    build: .
+    ports:
+      - "5002:5000"  # Staging runs on port 5002
+    volumes:
+      - .:/app
+      - staging_logs:/app/logs
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/finance_db_staging
+    depends_on:
+      - db
+
+  # Staging database
+  db:
+    image: postgres:14-alpine
+    volumes:
+      - staging_postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=finance_db_staging
+    ports:
+      - "5433:5432"  # Different port for staging DB
+
+# Staging volumes
+volumes:
+  staging_postgres_data:
+  staging_logs: {}

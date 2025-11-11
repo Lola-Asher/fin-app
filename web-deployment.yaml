@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.37.0 (HEAD)
+  labels:
+    io.kompose.service: web
+  name: web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: web
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.37.0 (HEAD)
+      labels:
+        io.kompose.service: web
+    spec:
+      containers:
+        - env:
+            - name: DATABASE_URL
+              value: postgresql://user:password@db:5432/finance_db
+          image: web
+          name: web
+          ports:
+            - containerPort: 5000
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /app
+              name: web-cm0
+            - mountPath: /app/logs
+              name: web-logs
+      restartPolicy: Always
+      volumes:
+        - configMap:
+            name: web-cm0
+          name: web-cm0
+        - name: web-logs
+          persistentVolumeClaim:
+            claimName: web-logs

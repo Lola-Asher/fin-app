@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fin-app-deployment 
+spec:
+  replicas: 1 
+  selector:
+    matchLabels:
+      app: fin-app
+  template:
+    metadata:
+      labels:
+        app: fin-app
+    spec:
+      containers:
+        - name: fin-app-container
+          image: fin-app:latest
+          ports:
+            - containerPort: 5000
+          env:
+            - name: DATABASE_URL
+              value: "postgresql://username:password@postgres-service:5432/findb"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"

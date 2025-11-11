@@ -1,0 +1,13 @@
+# service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: fin-app-service
+spec:
+  selector:
+    app: fin-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
+  type: NodePort 
